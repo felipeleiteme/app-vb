@@ -1,13 +1,25 @@
 {
   "expo": {
     "name": "App VB",
-    "slug": "app-vb",
+    "slug": "app-vb-felipe",
     "version": "1.0.0",
     "orientation": "portrait",
     "platforms": [
       "ios",
       "android",
       "web"
-    ]
+    ],
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bb400028-3940-4ec8-acca-d2a79f8ae16c"
+      }
+    },
+    "android": {
+      "package": "com.felipeleiteme.appvbfelipe"
+    }
   }
 }
