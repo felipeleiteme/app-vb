@@ -143,13 +143,30 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
               Organize suas atividades
             </Text>
           </VStack>
-          <Icon 
-            as={MaterialIcons} 
-            name="check-circle" 
-            size="xl" 
-            color="white" 
-            opacity={0.8}
-          />
+          <HStack space={2}>
+            <Pressable 
+              onPress={() => navigation.navigate('Pomodoro')}
+              _pressed={{ opacity: 0.8 }}
+              p="2"
+              borderRadius="md"
+              bg="white"
+              opacity={0.2}
+            >
+              <Icon 
+                as={MaterialIcons} 
+                name="timer" 
+                size="md" 
+                color="white" 
+              />
+            </Pressable>
+            <Icon 
+              as={MaterialIcons} 
+              name="check-circle" 
+              size="xl" 
+              color="white" 
+              opacity={0.8}
+            />
+          </HStack>
         </HStack>
       </Box>
 

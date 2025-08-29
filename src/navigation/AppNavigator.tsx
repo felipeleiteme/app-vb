@@ -44,7 +44,7 @@ const TasksStack = () => {
 const AppNavigator: React.FC = () => {
   return (
     <Tab.Navigator
-      initialRouteName="TaskList"
+      initialRouteName="Pomodoro"
       screenOptions={{
         tabBarActiveTintColor: theme.colors.primary[600],
         tabBarInactiveTintColor: 'gray',
@@ -52,22 +52,22 @@ const AppNavigator: React.FC = () => {
       }}
     >
       <Tab.Screen 
-        name="TaskList" 
-        component={TasksStack} 
-        options={{
-          tabBarLabel: 'Tarefas',
-          tabBarIcon: ({ color, size }) => (
-            <Icon as={MaterialIcons} name="list" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen 
         name="Pomodoro" 
         component={PomodoroScreen} 
         options={{
           tabBarLabel: 'Pomodoro',
           tabBarIcon: ({ color, size }) => (
             <Icon as={MaterialIcons} name="timer" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen 
+        name="TaskList" 
+        component={TasksStack} 
+        options={{
+          tabBarLabel: 'Tarefas',
+          tabBarIcon: ({ color, size }) => (
+            <Icon as={MaterialIcons} name="list" color={color} size={size} />
           ),
         }}
       />
