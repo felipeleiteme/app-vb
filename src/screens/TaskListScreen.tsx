@@ -9,17 +9,15 @@ import {
   Pressable,
   Spinner,
   VStack,
-  Animated,
   Fade,
-  Slide,
 } from 'native-base';
 import React, { useRef, useEffect } from 'react';
-import { FlatList, Alert, Platform } from 'react-native';
+import { FlatList, Alert, Platform, Animated } from 'react-native';
 
 import { useTasks } from '../context/TasksContext';
 import { TaskListScreenProps, Task } from '../types';
-import TaskCounter from '../components/TaskCounter';
 import EditableTaskText from '../components/EditableTaskText';
+import Header from '../components/Header';
 
 const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
   const { tasks, isLoading, removeTask, toggleTask, editTask } = useTasks();
@@ -56,14 +54,13 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
   };
 
   const renderTaskItem = ({ item, index }: { item: Task; index: number }) => (
-    <Slide in={true} placement="right" duration={300} delay={index * 100}>
+    <Fade in={true} entryDuration={350} delay={index * 80}>
       <Box 
         borderBottomWidth="1" 
         borderBottomColor="coolGray.200" 
         py="4" 
         px="4"
         bg={item.completed ? 'coolGray.50' : 'white'}
-        _pressed={{ bg: 'coolGray.100' }}
       >
         <HStack alignItems="center" justifyContent="space-between">
           <HStack alignItems="center" space={3} flex={1}>
@@ -116,64 +113,25 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
           </HStack>
         </HStack>
       </Box>
-    </Slide>
+    </Fade>
   );
 
   return (
     <Box flex={1} bg="white">
-      {/* Header com gradiente */}
-      <Box 
-        bg={{
-          linearGradient: {
-            colors: ['primary.600', 'primary.700'],
-            start: [0, 0],
-            end: [1, 0],
-          },
-        }}
-        py="6" 
-        px="4"
-        shadow={3}
-      >
-        <HStack justifyContent="space-between" alignItems="center">
-          <VStack>
-            <Text color="white" fontSize="24" fontWeight="bold">
-              Minhas Tarefas
-            </Text>
-            <Text color="white" fontSize="sm" opacity={0.9}>
-              Organize suas atividades
-            </Text>
-          </VStack>
-          <HStack space={2}>
-            <Pressable 
-              onPress={() => navigation.navigate('Pomodoro')}
-              _pressed={{ opacity: 0.8 }}
-              p="2"
-              borderRadius="md"
-              bg="white"
-              opacity={0.2}
-            >
-              <Icon 
-                as={MaterialIcons} 
-                name="timer" 
-                size="md" 
-                color="white" 
-              />
-            </Pressable>
-            <Icon 
-              as={MaterialIcons} 
-              name="check-circle" 
-              size="xl" 
-              color="white" 
-              opacity={0.8}
-            />
-          </HStack>
-        </HStack>
-      </Box>
+      <Header
+        title="Minhas Tarefas"
+        rightIcon={
+          <Icon
+            as={MaterialIcons}
+            name="check-circle"
+            size="xl"
+            color="white"
+            opacity={0.8}
+          />
+        }
+      />
 
-      {/* Contador de tarefas */}
-      {!isLoading && tasks.length > 0 && (
-        <TaskCounter tasks={tasks} />
-      )}
+      
 
       {/* Conteúdo principal */}
       {isLoading ? (
@@ -183,7 +141,7 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
         </VStack>
       ) : tasks.length === 0 ? (
         <VStack flex={1} justifyContent="center" alignItems="center" space={4} px="8">
-          <Fade in={true} duration={800}>
+          <Fade in={true} entryDuration={800}>
             <VStack alignItems="center" space={3}>
               <Icon 
                 as={MaterialIcons} 
@@ -220,10 +178,7 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
         shadow={8}
         colorScheme="primary"
         bg="primary.600"
-        _pressed={{ 
-          bg: 'primary.700',
-          transform: [{ scale: 0.95 }]
-        }}
+        _pressed={{ bg: 'primary.700' }}
         leftIcon={
           <Icon 
             as={MaterialIcons} 
@@ -236,7 +191,7 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
         accessibilityLabel="Adicionar nova tarefa"
         _text={{ fontWeight: 'bold' }}
       >
-        Nova Tarefa
+        Adicionar Tarefa
       </Button>
     </Box>
   );

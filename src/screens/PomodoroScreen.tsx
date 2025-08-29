@@ -1,64 +1,56 @@
 import React from 'react';
 import { Box, Text, VStack, HStack, Icon, Button } from 'native-base';
 import { MaterialIcons } from '@expo/vector-icons';
+import { View, StyleSheet } from 'react-native';
+import Header from '../components/Header';
 import PomodoroTimer from '../components/PomodoroTimer';
 import { useTasks } from '../context/TasksContext';
 import { usePomodoro } from '../context/PomodoroContext';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../types';
+import Clock1Icon from '../assets/icons/Clock1Icon';
+import Clock2Icon from '../assets/icons/Clock2Icon';
 
 type PomodoroScreenNavigationProp = StackNavigationProp<RootStackParamList, 'TaskList'>;
 
 const PomodoroScreen: React.FC = () => {
   const { tasks } = useTasks();
-  const { setTotalPomodoros, setMode } = usePomodoro();
+  const { setTotalPomodoros, stats } = usePomodoro();
   const navigation = useNavigation<PomodoroScreenNavigationProp>();
+
+  // Total de pomodoros estimados (memoizado)
+  const totalEstimatedPomodoros = React.useMemo(() => {
+    return tasks
+      .filter(task => !task.completed)
+      .reduce((total, task) => total + (task.estimatedPomodoros || 1), 0);
+  }, [tasks]);
 
   // Atualizar o total de pomodoros com base nas tarefas não concluídas
   React.useEffect(() => {
-    const totalEstimatedPomodoros = tasks
-      .filter(task => !task.completed)
-      .reduce((total, task) => total + (task.estimatedPomodoros || 1), 0);
-    setTotalPomodoros(totalEstimatedPomodoros);
-  }, [tasks, setTotalPomodoros]);
+    if (stats.totalPomodoros !== totalEstimatedPomodoros) {
+      setTotalPomodoros(totalEstimatedPomodoros);
+    }
+  }, [totalEstimatedPomodoros, setTotalPomodoros, stats.totalPomodoros]);
 
   const pendingTasks = tasks.filter(task => !task.completed).length;
   const completedTasks = tasks.filter(task => task.completed).length;
 
   return (
     <Box flex={1} bg="white">
-      {/* Header com gradiente */}
-      <Box 
-        bg={{
-          linearGradient: {
-            colors: ['red.600', 'red.700'],
-            start: [0, 0],
-            end: [1, 0],
-          },
-        }}
-        py="6" 
-        px="4"
-        shadow={3}
-      >
-        <HStack justifyContent="space-between" alignItems="center">
-          <VStack>
-            <Text color="white" fontSize="24" fontWeight="bold">
-              Pomodoro Timer
-            </Text>
-            <Text color="white" fontSize="sm" opacity={0.9}>
-              Foque no que importa
-            </Text>
-          </VStack>
-          <Icon 
-            as={MaterialIcons} 
-            name="timer" 
-            size="xl" 
-            color="white" 
-            opacity={0.8}
-          />
-        </HStack>
-      </Box>
+      <Header
+        title="Timer Pomodoro"
+        rightIcon={
+          <View style={styles.clockContainer}>
+            <View style={styles.clock1Container}>
+              <Clock1Icon />
+            </View>
+            <View style={styles.clock2Container}>
+              <Clock2Icon />
+            </View>
+          </View>
+        }
+      />
 
       {/* Contador de tarefas */}
       {tasks.length > 0 && (
@@ -90,58 +82,40 @@ const PomodoroScreen: React.FC = () => {
       {/* Timer Principal */}
       <VStack flex={1} justifyContent="center" alignItems="center" px="6" space={8}>
         <PomodoroTimer selectedTaskId={null} />
-        
-        {/* Botões de modo */}
-        <VStack space={4} w="full" maxW="300">
-          <Button
-            onPress={() => setMode('pomodoro')}
-            leftIcon={<Icon as={MaterialIcons} name="work" size="sm" color="white" />}
-            colorScheme="red"
-            bg="red.600"
-            _pressed={{ bg: 'red.700' }}
-            size="lg"
-          >
-            Pomodoro (25min)
-          </Button>
-          
-          <Button
-            onPress={() => setMode('shortBreak')}
-            leftIcon={<Icon as={MaterialIcons} name="coffee" size="sm" color="white" />}
-            colorScheme="orange"
-            bg="orange.500"
-            _pressed={{ bg: 'orange.600' }}
-            size="lg"
-          >
-            Pausa Curta (5min)
-          </Button>
-          
-          <Button
-            onPress={() => setMode('longBreak')}
-            leftIcon={<Icon as={MaterialIcons} name="restaurant" size="sm" color="white" />}
-            colorScheme="green"
-            bg="green.600"
-            _pressed={{ bg: 'green.700' }}
-            size="lg"
-          >
-            Pausa Longa (15min)
-          </Button>
-        </VStack>
 
-        {/* Botão para gerenciar tarefas */}
+        {/* Ação principal: gerenciar tarefas */}
         <Button
           onPress={() => navigation.navigate('TaskList')}
           leftIcon={<Icon as={MaterialIcons} name="list" size="sm" color="white" />}
-          colorScheme="gray"
-          bg="gray.600"
-          _pressed={{ bg: 'gray.700' }}
-          size="md"
-          variant="outline"
+          colorScheme="primary"
+          bg="primary.600"
+          _pressed={{ bg: 'primary.700' }}
+          size="lg"
+          w="64"
+          borderRadius="full"
         >
-          Gerenciar Tarefas
+          Ver Tarefas
         </Button>
       </VStack>
     </Box>
   );
 };
+
+const styles = StyleSheet.create({
+  clockContainer: {
+    width: 24,
+    height: 24,
+  },
+  clock1Container: {
+    position: 'absolute',
+    top: 2,
+    left: 2,
+  },
+  clock2Container: {
+    position: 'absolute',
+    top: 6,
+    left: 12,
+  }
+});
 
 export default PomodoroScreen;

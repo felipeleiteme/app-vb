@@ -6,15 +6,9 @@ import {
   VStack,
   HStack,
   Text,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   FormControl,
   Box,
   Divider,
-  Fade,
   Slide,
 } from 'native-base';
 import React, { useState, useLayoutEffect, useEffect } from 'react';
@@ -93,27 +87,7 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <VStack flex={1} p="6" space={6}>
-        {/* Header informativo */}
-        <Slide in={true} placement="top" duration={500}>
-          <Box bg="primary.50" p="4" borderRadius="lg" borderLeftWidth="4" borderLeftColor="primary.500">
-            <HStack space={3} alignItems="center">
-              <Icon 
-                as={MaterialIcons} 
-                name={isEditMode ? "edit" : "add-task"} 
-                size="md" 
-                color="primary.600" 
-              />
-              <VStack flex={1}>
-                <Text fontSize="md" fontWeight="bold" color="primary.800">
-                  {isEditMode ? 'Editando Tarefa' : 'Criando Nova Tarefa'}
-                </Text>
-                <Text fontSize="sm" color="primary.600">
-                  {isEditMode ? 'Modifique os detalhes da sua tarefa' : 'Adicione uma nova tarefa à sua lista'}
-                </Text>
-              </VStack>
-            </HStack>
-          </Box>
-        </Slide>
+        
 
         {/* Formulário */}
         <VStack space={6} flex={1}>
@@ -162,31 +136,26 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
               </HStack>
             </FormControl.Label>
             <VStack space={3}>
-              <HStack alignItems="center" space={3}>
-                <NumberInput
-                  value={String(estimatedPomodoros)}
-                  onChange={(valueString) => {
-                    const value = Number(valueString);
-                    if (!isNaN(value) && value >= 1 && value <= 10) {
-                      setEstimatedPomodoros(value);
-                    }
-                  }}
-                  min={1}
-                  max={10}
-                  step={1}
-                  width="120px"
-                >
-                  <NumberInputField 
-                    borderColor="gray.300"
-                    _focus={{
-                      borderColor: "primary.500",
-                    }}
-                  />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
+              <HStack alignItems="center" space={4}>
+                <HStack alignItems="center" space={3}>
+                  <Button
+                    onPress={() => setEstimatedPomodoros((v) => Math.max(1, v - 1))}
+                    variant="outline"
+                    size="sm"
+                  >
+                    -
+                  </Button>
+                  <Text fontSize="lg" minW="8" textAlign="center">
+                    {estimatedPomodoros}
+                  </Text>
+                  <Button
+                    onPress={() => setEstimatedPomodoros((v) => Math.min(10, v + 1))}
+                    variant="outline"
+                    size="sm"
+                  >
+                    +
+                  </Button>
+                </HStack>
                 <VStack flex={1}>
                   <Text color="gray.600" fontSize="md">
                     {estimatedPomodoros === 1 ? '1 pomodoro' : `${estimatedPomodoros} pomodoros`}
@@ -219,10 +188,7 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
             }
             colorScheme="primary"
             bg="primary.600"
-            _pressed={{ 
-              bg: 'primary.700',
-              transform: [{ scale: 0.98 }]
-            }}
+            _pressed={{ bg: 'primary.700' }}
             size="lg"
             isDisabled={!isValid}
             opacity={isValid ? 1 : 0.6}
@@ -235,10 +201,7 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
             variant="outline"
             colorScheme="gray"
             size="lg"
-            _pressed={{ 
-              bg: 'gray.100',
-              transform: [{ scale: 0.98 }]
-            }}
+            _pressed={{ bg: 'gray.100' }}
           >
             Cancelar
           </Button>

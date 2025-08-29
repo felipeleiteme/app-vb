@@ -163,12 +163,13 @@ export const PomodoroProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   // Definir o total de pomodoros planejados
-  const setTotalPomodoros = (total: number) => {
-    setStats(prev => ({
-      ...prev,
-      totalPomodoros: total
-    }));
-  };
+  const setTotalPomodoros = useCallback((total: number) => {
+    setStats(prev => (
+      prev.totalPomodoros === total
+        ? prev
+        : { ...prev, totalPomodoros: total }
+    ));
+  }, []);
 
   // Calcular o horário estimado de término
   const calculateEstimatedEndTime = (): string => {
