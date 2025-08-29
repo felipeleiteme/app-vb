@@ -8,19 +8,20 @@ export interface Task {
 }
 
 // Define os nomes das telas e seus parâmetros
+// AddTask pode receber parâmetros para o modo de edição
 export type RootStackParamList = {
   TaskList: undefined;
-  AddTask: undefined;
+  AddTask: { taskId?: number; taskText?: string } | undefined;
 };
 
-// Define as propriedades para a tela de lista de tarefas
-export type TaskListScreenProps = StackScreenProps<RootStackParamList, 'TaskList'> & {
-  tasks: Task[];
-  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
-  removeTask: (id: number) => void;
-};
+// As telas agora recebem apenas as props de navegação padrão.
+// Os dados das tarefas são consumidos via context hook.
+export type TaskListScreenProps = StackScreenProps<
+  RootStackParamList,
+  'TaskList'
+>;
 
-// Define as propriedades para a tela de adicionar tarefa
-export type AddTaskScreenProps = StackScreenProps<RootStackParamList, 'AddTask'> & {
-  addTask: (text: string) => void;
-};
+export type AddTaskScreenProps = StackScreenProps<
+  RootStackParamList,
+  'AddTask'
+>;

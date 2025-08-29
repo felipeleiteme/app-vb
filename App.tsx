@@ -1,15 +1,20 @@
+import 'react-native-gesture-handler';
 import React from 'react';
-import { ThemeProvider } from 'react-native-elements';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/navigation/AppNavigator';
+import { NativeBaseProvider } from 'native-base';
+import theme from './src/theme';
+import { TasksProvider } from './src/context/TasksContext';
 
 const App: React.FC = () => {
   return (
-    <ThemeProvider>
-      <NavigationContainer>
-        <AppNavigator />
-      </NavigationContainer>
-    </ThemeProvider>
+    <NativeBaseProvider theme={theme}>
+      <TasksProvider>
+        <NavigationContainer>
+          <AppNavigator />
+        </NavigationContainer>
+      </TasksProvider>
+    </NativeBaseProvider>
   );
 };
 

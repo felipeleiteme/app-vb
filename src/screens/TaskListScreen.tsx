@@ -1,103 +1,106 @@
-import React from 'react';
+import { MaterialIcons } from '@expo/vector-icons';
 import {
-  StyleSheet,
-  FlatList,
-  SafeAreaView,
-  View,
-  Alert,
-} from 'react-native';
-import {
-  Header,
-  ListItem,
-  CheckBox,
-  FAB,
-  Icon,
+  Box,
   Text,
-} from 'react-native-elements';
+  HStack,
+  Checkbox,
+  Icon,
+  Button,
+  Pressable,
+  Spinner,
+  VStack,
+} from 'native-base';
+import React from 'react';
+import { FlatList, Alert, Platform } from 'react-native';
+
+import { useTasks } from '../context/TasksContext';
 import { TaskListScreenProps, Task } from '../types';
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f0f0f0',
-  },
-  header: {
-    backgroundColor: 'rgb(0, 122, 255)',
-    paddingVertical: 20,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgb(242, 242, 242)',
-  },
-  headerTitle: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  emptyView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noTasksText: {
-    color: '#888',
-  },
-  taskText: {
-    color: '#333',
-  },
-  taskTextCompleted: {
-    textDecorationLine: 'line-through',
-    color: '#aaa',
-    fontStyle: 'italic',
-  },
-});
-
-const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation, tasks, setTasks, removeTask }) => {
-  const toggleTaskCompletion = (id: number) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
-  };
+const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation }) => {
+  const { tasks, isLoading, removeTask, toggleTask } = useTasks();
 
   const confirmDelete = (id: number) => {
-    Alert.alert('Excluir tarefa', 'Deseja excluir esta tarefa?', [
+    if (Platform.OS === 'web') {
+      const g: unknown = global;
+      const confirmFn = (g as { confirm?: (msg?: string) => boolean }).confirm;
+      const yes = typeof confirmFn === 'function' ? confirmFn('Deseja realmente excluir esta tarefa?') : true;
+      if (yes) removeTask(id);
+      return;
+    }
+    Alert.alert('Excluir tarefa', 'Deseja realmente excluir esta tarefa?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Excluir', style: 'destructive', onPress: () => removeTask(id) },
     ]);
   };
 
+  const handleEdit = (task: Task) => {
+    navigation.navigate('AddTask', { taskId: task.id, taskText: task.text });
+  };
+
   const renderTaskItem = ({ item }: { item: Task }) => (
-    <ListItem bottomDivider onPress={() => toggleTaskCompletion(item.id)}>
-      <CheckBox
-        checked={item.completed}
-        onPress={() => toggleTaskCompletion(item.id)}
-        iconType="material-community"
-        checkedIcon="checkbox-marked-circle"
-        uncheckedIcon="checkbox-blank-circle-outline"
-      />
-      <ListItem.Content>
-        <ListItem.Title style={item.completed ? styles.taskTextCompleted : styles.taskText}>
-          {item.text}
-        </ListItem.Title>
-      </ListItem.Content>
-      <Icon name="delete" type="material" color="#d32f2f" onPress={() => confirmDelete(item.id)} />
-    </ListItem>
+    <Box borderBottomWidth="1" borderBottomColor="coolGray.200" py="3" px="4">
+      <HStack alignItems="center" justifyContent="space-between">
+        <HStack alignItems="center" space={3} flex={1}>
+          <Checkbox
+            value={item.id.toString()}
+            isChecked={item.completed}
+            onChange={() => toggleTask(item.id)}
+            accessibilityLabel="Marcar tarefa como concluída"
+            colorScheme="primary"
+          />
+          <Pressable onPress={() => toggleTask(item.id)} _pressed={{ opacity: 0.5 }} flex={1}>
+            <Text
+              strikeThrough={item.completed}
+              color={item.completed ? 'coolGray.400' : 'coolGray.800'}
+              fontSize="md"
+            >
+              {item.text}
+            </Text>
+          </Pressable>
+        </HStack>
+        <HStack space={4}>
+          <Pressable onPress={() => handleEdit(item)} accessibilityLabel={`Editar tarefa ${item.text}`}>
+            <Icon
+              as={MaterialIcons}
+              name="edit"
+              size="5"
+              color="gray.500"
+            />
+          </Pressable>
+          <Pressable onPress={() => confirmDelete(item.id)} accessibilityLabel={`Excluir tarefa ${item.text}`}>
+            <Icon
+              as={MaterialIcons}
+              name="delete"
+              size="5"
+              color="red.500"
+            />
+          </Pressable>
+        </HStack>
+      </HStack>
+    </Box>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header
-        centerComponent={{ text: 'Minhas Tarefas', style: styles.headerTitle }}
-        containerStyle={styles.header}
-      />
+    <Box flex={1} bg="white">
+      <Box bg="primary.600" py="5" px="4">
+        <Text color="white" fontSize="22" fontWeight="bold">
+          Minhas Tarefas
+        </Text>
+      </Box>
 
-      {tasks.length === 0 ? (
-        <View style={styles.emptyView}>
-          <Text h4 style={styles.noTasksText}>
+      {isLoading ? (
+        <VStack flex={1} justifyContent="center" alignItems="center">
+          <Spinner accessibilityLabel="Carregando tarefas" color="primary.600" size="lg" />
+          <Text mt="2" color="gray.500">Carregando...</Text>
+        </VStack>
+      ) : tasks.length === 0 ? (
+        <VStack flex={1} justifyContent="center" alignItems="center" space={2}>
+          <Icon as={MaterialIcons} name="playlist-add-check" size="2xl" color="gray.300" />
+          <Text fontSize="lg" color="gray.500">
             Nenhuma tarefa adicionada!
           </Text>
-        </View>
+          <Text color="gray.400">Clique em &quot;Nova Tarefa&quot; para começar.</Text>
+        </VStack>
       ) : (
         <FlatList
           data={tasks}
@@ -106,13 +109,23 @@ const TaskListScreen: React.FC<TaskListScreenProps> = ({ navigation, tasks, setT
         />
       )}
 
-      <FAB
-        title={<Icon name="add" type="material" color="white" />}
-        placement="right"
-        color="#6200ee"
-        onPress={() => navigation.navigate('AddTask')}
-      />
-    </SafeAreaView>
+      <Button
+        position="absolute"
+        bottom="8"
+        right="6"
+        size="lg"
+        borderRadius="full"
+        shadow={6}
+        colorScheme="primary"
+        bg="primary.600"
+        _pressed={{ bg: 'primary.700' }}
+        leftIcon={<Icon as={MaterialIcons} name="add" size="md" color="white" />}
+        onPress={() => navigation.navigate('AddTask', {})}
+        accessibilityLabel="Adicionar nova tarefa"
+      >
+        Nova Tarefa
+      </Button>
+    </Box>
   );
 };
 
