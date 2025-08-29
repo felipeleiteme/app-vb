@@ -32,9 +32,16 @@ export async function saveTasks(tasks: Task[]): Promise<void> {
 function isTask(t: unknown): t is Task {
   if (typeof t !== 'object' || t === null) return false;
   const obj = t as Record<string, unknown>;
-  return (
+  const hasRequiredFields = (
     typeof obj.id === 'number' &&
     typeof obj.text === 'string' &&
     typeof obj.completed === 'boolean'
   );
+  
+  // Verificar o campo opcional estimatedPomodoros
+  if ('estimatedPomodoros' in obj && typeof obj.estimatedPomodoros !== 'number') {
+    return false;
+  }
+  
+  return hasRequiredFields;
 }

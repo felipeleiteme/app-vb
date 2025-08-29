@@ -4,8 +4,20 @@ import {
   Button,
   Icon,
   VStack,
+  HStack,
+  Text,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  FormControl,
+  Box,
+  Divider,
+  Fade,
+  Slide,
 } from 'native-base';
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -24,25 +36,54 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
   const taskToEdit = isEditMode ? tasks.find(t => t.id === params.taskId) : undefined;
 
   const [taskText, setTaskText] = useState(isEditMode ? taskToEdit?.text || '' : '');
+  const [estimatedPomodoros, setEstimatedPomodoros] = useState<number>(isEditMode ? taskToEdit?.estimatedPomodoros || 1 : 1);
+  const [isValid, setIsValid] = useState(false);
 
   // Atualiza o título da tela dinamicamente
   useLayoutEffect(() => {
     navigation.setOptions({
-      title: isEditMode ? 'Editar Tarefa' : 'Adicionar Nova Tarefa',
+      title: isEditMode ? 'Editar Tarefa' : 'Nova Tarefa',
+      headerStyle: {
+        backgroundColor: '#6366F1',
+      },
+      headerTintColor: '#fff',
+      headerTitleStyle: {
+        fontWeight: 'bold',
+      },
     });
   }, [navigation, isEditMode]);
+
+  // Validação em tempo real
+  useEffect(() => {
+    setIsValid(taskText.trim().length > 0);
+  }, [taskText]);
 
   const handleSaveTask = () => {
     const trimmedText = taskText.trim();
     if (trimmedText.length > 0) {
       if (isEditMode && params.taskId) {
-        editTask(params.taskId, trimmedText);
+        editTask(params.taskId, trimmedText, estimatedPomodoros);
       } else {
-        addTask(trimmedText);
+        addTask(trimmedText, estimatedPomodoros);
       }
       navigation.goBack();
     } else {
       Alert.alert('Campo Vazio', 'Por favor, digite o nome da tarefa.');
+    }
+  };
+
+  const handleCancel = () => {
+    if (taskText.trim() !== (isEditMode ? taskToEdit?.text || '' : '')) {
+      Alert.alert(
+        'Descartar alterações?',
+        'Você tem alterações não salvas. Deseja descartá-las?',
+        [
+          { text: 'Continuar editando', style: 'cancel' },
+          { text: 'Descartar', style: 'destructive', onPress: () => navigation.goBack() },
+        ]
+      );
+    } else {
+      navigation.goBack();
     }
   };
 
@@ -51,26 +92,157 @@ const AddTaskScreen: React.FC<AddTaskScreenProps> = ({ navigation, route }) => {
       style={{ flex: 1, backgroundColor: '#fff' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <VStack flex={1} p="5" justifyContent="space-between">
-        <Input
-          placeholder="Ex: Estudar React Native"
-          value={taskText}
-          onChangeText={setTaskText}
-          autoFocus
-          fontSize="lg"
-          onSubmitEditing={handleSaveTask}
-          returnKeyType="done"
-        />
-        <Button
-          onPress={handleSaveTask}
-          leftIcon={<Icon as={MaterialIcons} name="save" size="sm" color="white" />}
-          colorScheme="primary"
-          bg="primary.600"
-          _pressed={{ bg: 'primary.700' }}
-          size="lg"
-        >
-          {isEditMode ? 'Salvar Alterações' : 'Adicionar Tarefa'}
-        </Button>
+      <VStack flex={1} p="6" space={6}>
+        {/* Header informativo */}
+        <Slide in={true} placement="top" duration={500}>
+          <Box bg="primary.50" p="4" borderRadius="lg" borderLeftWidth="4" borderLeftColor="primary.500">
+            <HStack space={3} alignItems="center">
+              <Icon 
+                as={MaterialIcons} 
+                name={isEditMode ? "edit" : "add-task"} 
+                size="md" 
+                color="primary.600" 
+              />
+              <VStack flex={1}>
+                <Text fontSize="md" fontWeight="bold" color="primary.800">
+                  {isEditMode ? 'Editando Tarefa' : 'Criando Nova Tarefa'}
+                </Text>
+                <Text fontSize="sm" color="primary.600">
+                  {isEditMode ? 'Modifique os detalhes da sua tarefa' : 'Adicione uma nova tarefa à sua lista'}
+                </Text>
+              </VStack>
+            </HStack>
+          </Box>
+        </Slide>
+
+        {/* Formulário */}
+        <VStack space={6} flex={1}>
+          <FormControl isInvalid={!isValid && taskText.length > 0}>
+            <FormControl.Label>
+              <HStack space={2} alignItems="center">
+                <Icon as={MaterialIcons} name="assignment" size="sm" color="gray.600" />
+                <Text fontSize="md" fontWeight="medium" color="gray.700">
+                  Nome da Tarefa
+                </Text>
+              </HStack>
+            </FormControl.Label>
+            <Input
+              placeholder="Ex: Estudar React Native, Fazer exercícios..."
+              value={taskText}
+              onChangeText={setTaskText}
+              autoFocus
+              fontSize="lg"
+              returnKeyType="next"
+              autoComplete="off"
+              borderColor={!isValid && taskText.length > 0 ? "red.300" : "gray.300"}
+              _focus={{
+                borderColor: "primary.500",
+                bg: "white",
+              }}
+              _invalid={{
+                borderColor: "red.300",
+              }}
+            />
+            {!isValid && taskText.length > 0 && (
+              <FormControl.ErrorMessage>
+                O nome da tarefa não pode estar vazio
+              </FormControl.ErrorMessage>
+            )}
+          </FormControl>
+          
+          <Divider />
+          
+          <FormControl>
+            <FormControl.Label>
+              <HStack space={2} alignItems="center">
+                <Icon as={MaterialIcons} name="timer" size="sm" color="gray.600" />
+                <Text fontSize="md" fontWeight="medium" color="gray.700">
+                  Tempo Estimado
+                </Text>
+              </HStack>
+            </FormControl.Label>
+            <VStack space={3}>
+              <HStack alignItems="center" space={3}>
+                <NumberInput
+                  value={String(estimatedPomodoros)}
+                  onChange={(valueString) => {
+                    const value = Number(valueString);
+                    if (!isNaN(value) && value >= 1 && value <= 10) {
+                      setEstimatedPomodoros(value);
+                    }
+                  }}
+                  min={1}
+                  max={10}
+                  step={1}
+                  width="120px"
+                >
+                  <NumberInputField 
+                    borderColor="gray.300"
+                    _focus={{
+                      borderColor: "primary.500",
+                    }}
+                  />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <VStack flex={1}>
+                  <Text color="gray.600" fontSize="md">
+                    {estimatedPomodoros === 1 ? '1 pomodoro' : `${estimatedPomodoros} pomodoros`}
+                  </Text>
+                  <Text color="gray.500" fontSize="sm">
+                    ({estimatedPomodoros * 25} minutos)
+                  </Text>
+                </VStack>
+              </HStack>
+              <Box bg="coolGray.50" p="3" borderRadius="md">
+                <Text fontSize="sm" color="gray.600">
+                  💡 Dica: Um pomodoro = 25 minutos de foco + 5 minutos de pausa
+                </Text>
+              </Box>
+            </VStack>
+          </FormControl>
+        </VStack>
+
+        {/* Botões de ação */}
+        <VStack space={3}>
+          <Button
+            onPress={handleSaveTask}
+            leftIcon={
+              <Icon 
+                as={MaterialIcons} 
+                name={isEditMode ? "save" : "add"} 
+                size="sm" 
+                color="white" 
+              />
+            }
+            colorScheme="primary"
+            bg="primary.600"
+            _pressed={{ 
+              bg: 'primary.700',
+              transform: [{ scale: 0.98 }]
+            }}
+            size="lg"
+            isDisabled={!isValid}
+            opacity={isValid ? 1 : 0.6}
+          >
+            {isEditMode ? 'Salvar Alterações' : 'Adicionar Tarefa'}
+          </Button>
+          
+          <Button
+            onPress={handleCancel}
+            variant="outline"
+            colorScheme="gray"
+            size="lg"
+            _pressed={{ 
+              bg: 'gray.100',
+              transform: [{ scale: 0.98 }]
+            }}
+          >
+            Cancelar
+          </Button>
+        </VStack>
       </VStack>
     </KeyboardAvoidingView>
   );

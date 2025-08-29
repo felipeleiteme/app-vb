@@ -5,14 +5,17 @@ import AppNavigator from './src/navigation/AppNavigator';
 import { NativeBaseProvider } from 'native-base';
 import theme from './src/theme';
 import { TasksProvider } from './src/context/TasksContext';
+import { PomodoroProvider } from './src/context/PomodoroContext';
 
 const App: React.FC = () => {
   return (
     <NativeBaseProvider theme={theme}>
       <TasksProvider>
-        <NavigationContainer>
-          <AppNavigator />
-        </NavigationContainer>
+        <PomodoroProvider>
+          <NavigationContainer>
+            <AppNavigator />
+          </NavigationContainer>
+        </PomodoroProvider>
       </TasksProvider>
     </NativeBaseProvider>
   );

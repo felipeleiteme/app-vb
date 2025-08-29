@@ -16,10 +16,10 @@ import { Task } from '../types';
 interface TasksContextType {
   tasks: Task[];
   isLoading: boolean;
-  addTask: (text: string) => void;
+  addTask: (text: string, estimatedPomodoros?: number) => void;
   removeTask: (id: number) => void;
   toggleTask: (id: number) => void;
-  editTask: (id: number, newText: string) => void;
+  editTask: (id: number, newText: string, estimatedPomodoros?: number) => void;
 }
 
 // Cria o Contexto
@@ -70,10 +70,15 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [tasks, isLoading]);
 
-  const addTask = useCallback((text: string) => {
+  const addTask = useCallback((text: string, estimatedPomodoros: number = 1) => {
     setTasks((prevTasks) => {
       const maxId = prevTasks.length ? Math.max(...prevTasks.map((t) => t.id)) : 0;
-      const newTask: Task = { id: maxId + 1, text, completed: false };
+      const newTask: Task = { 
+        id: maxId + 1, 
+        text, 
+        completed: false,
+        estimatedPomodoros
+      };
       return [...prevTasks, newTask];
     });
     toast.show({ description: 'Tarefa adicionada com sucesso!' });
@@ -92,10 +97,14 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }, []);
 
-  const editTask = useCallback((id: number, newText: string) => {
+  const editTask = useCallback((id: number, newText: string, estimatedPomodoros?: number) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === id ? { ...task, text: newText } : task
+        task.id === id ? { 
+          ...task, 
+          text: newText,
+          ...(estimatedPomodoros !== undefined && { estimatedPomodoros })
+        } : task
       )
     );
     toast.show({ description: 'Tarefa atualizada com sucesso!' });

@@ -5,6 +5,13 @@ export interface Task {
   id: number;
   text: string;
   completed: boolean;
+  estimatedPomodoros?: number; // Número estimado de pomodoros para completar a tarefa
+}
+
+// Estatísticas do Pomodoro
+export interface PomodoroStats {
+  completedPomodoros: number;
+  totalPomodoros: number;
 }
 
 // Define os nomes das telas e seus parâmetros
@@ -12,6 +19,7 @@ export interface Task {
 export type RootStackParamList = {
   TaskList: undefined;
   AddTask: { taskId?: number; taskText?: string } | undefined;
+  Pomodoro: undefined;
 };
 
 // As telas agora recebem apenas as props de navegação padrão.
@@ -24,4 +32,9 @@ export type TaskListScreenProps = StackScreenProps<
 export type AddTaskScreenProps = StackScreenProps<
   RootStackParamList,
   'AddTask'
+>;
+
+export type PomodoroScreenProps = StackScreenProps<
+  RootStackParamList,
+  'Pomodoro'
 >;
